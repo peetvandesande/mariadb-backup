@@ -106,6 +106,7 @@ fi
 
 OUT_BASENAME="${BACKUP_PREFIX}-${FILENAME_DB_PART}-${TS}${EXT}"
 OUT_PATH="${BACKUPS_DIR%/}/${OUT_BASENAME}"
+SHA="${OUT_PATH}.sha256"
 
 log "Starting MariaDB backup → ${OUT_PATH}"
 log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${COMPRESSOR}"
