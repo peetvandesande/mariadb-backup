@@ -68,16 +68,16 @@ log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${CO
 # Show a precise debug line
 case "${COMPRESSOR}" in
   zst)
-    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} --ssl-mode=${MARIADB_SSL_MODE} | zstd -T${ZSTD_THREADS} -q -f -${COMPRESSOR_LEVEL} - > ${OUT_PATH}"
+    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | zstd -T${ZSTD_THREADS} -q -f -${COMPRESSOR_LEVEL} - > ${OUT_PATH}"
     ;;
   gz)
-    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} --ssl-mode=${MARIADB_SSL_MODE} | gzip -c -f -${COMPRESSOR_LEVEL} > ${OUT_PATH}"
+    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | gzip -c -f -${COMPRESSOR_LEVEL} > ${OUT_PATH}"
     ;;
   bz2)
-    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} --ssl-mode=${MARIADB_SSL_MODE} | bzip2 -c -f -${COMPRESSOR_LEVEL} > ${OUT_PATH}"
+    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | bzip2 -c -f -${COMPRESSOR_LEVEL} > ${OUT_PATH}"
     ;;
   none)
-    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} --ssl-mode=${MARIADB_SSL_MODE} > ${OUT_PATH}"
+    log "DEBUG: /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} > ${OUT_PATH}"
     ;;
 esac
 
