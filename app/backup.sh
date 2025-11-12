@@ -114,6 +114,7 @@ log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${CO
 # -------- Perform dump → compressor ------------------------------------------
 # Dump to stdout, compress with chosen compressor streaming to file
 set +e
+log "DEBUG: Command = '/usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | ${COMP_CMD}'"
 sh -c '/usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | ${COMP_CMD}' > "${OUT_PATH}"
 rc=$?
 set -e
