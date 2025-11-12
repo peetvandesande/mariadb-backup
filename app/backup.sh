@@ -114,10 +114,32 @@ log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${CO
 # -------- Perform dump → compressor ------------------------------------------
 # Dump to stdout, compress with chosen compressor streaming to file
 set +e
-log "DEBUG: Command = '/usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | ${COMP_CMD}'"
-sh -c '/usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | ${COMP_CMD}' > "${OUT_PATH}"
+log "DEBUG: Command = '/usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | ${COMPRESSOR}'"
+
+# Run pipeline with proper variable expansion and pipefail where available
+set +e
+(
+  set -o pipefail 2>/dev/null || true
+  case "${COMPRESSOR}" in
+    zst)
+      /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | zstd -T"${ZSTD_THREADS}" -q -f -"${COMPRESSOR_LEVEL}" - > "${OUT_PATH}"
+      ;;
+    gz)
+      /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | gzip -c -f -"${COMPRESSOR_LEVEL}" > "${OUT_PATH}"
+      ;;
+    bz2)
+      /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} | bzip2 -c -f -"${COMPRESSOR_LEVEL}" > "${OUT_PATH}"
+      ;;
+    none)
+      /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} > "${OUT_PATH}"
+      ;;
+    *)
+      echo "Unsupported COMPRESSOR='${COMPRESSOR}'" >&2; exit 64;;
+  esac
+)
 rc=$?
 set -e
+
 
 if [ $rc -ne 0 ]; then
   log "Backup FAILED with exit code ${rc}"
