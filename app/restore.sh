@@ -12,7 +12,6 @@ set -eu
 : "${BACKUPS_DIR:=/backups}"
 : "${BACKUP_PREFIX:=mariadb}"        # used when auto-selecting newest
 : "${VERIFY_SHA256:=1}"
-: "${MARIADB_SSL_MODE:=DISABLED}"    # DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY
 
 log() { printf "%s %s\n" "$(date -Is)" "$*"; }
 
@@ -71,14 +70,14 @@ esac
 DB_ARGS=""
 if [ -n "${MARIADB_DATABASE}" ]; then
   log "Ensuring database '${MARIADB_DATABASE}' exists"
-  "${MYSQL_BIN}" --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
-    --user="${MARIADB_USER}" --ssl-mode="${MARIADB_SSL_MODE}" \
+  /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
+    --user="${MARIADB_USER}" \
     -e "CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;"
   DB_ARGS="${MARIADB_DATABASE}"
 fi
 
 log "Restoring ${INPUT} → ${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE:-(as in dump)}"
-log "DEBUG: ${DECOMP} '${INPUT}' | ${MYSQL_BIN} --host=${MARIADB_HOST} --port=${MARIADB_PORT} --user=${MARIADB_USER} --ssl-mode=${MARIADB_SSL_MODE} ${DB_ARGS:+${DB_ARGS}}"
+log "DEBUG: ${DECOMP} '${INPUT}' | /usr/bin/mariadb --host=${MARIADB_HOST} --port=${MARIADB_PORT} --user=${MARIADB_USER} ${DB_ARGS:+${DB_ARGS}}"
 
 # ---------------- Run restore with pipefail ---------------
 TMP_LOG="/tmp/mariadb-restore.log"
@@ -91,8 +90,8 @@ set +e
     "gzip -dc")     gzip -dc "${INPUT}" ;;
     "bzip2 -dc")    bzip2 -dc "${INPUT}" ;;
     *) echo "Internal error: bad DECOMP '${DECOMP}'" >&2; exit 70 ;;
-  esac | "${MYSQL_BIN}" --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
-         --user="${MARIADB_USER}" --ssl-mode="${MARIADB_SSL_MODE}" ${DB_ARGS:+${DB_ARGS}}
+  esac | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
+         --user="${MARIADB_USER}" ${DB_ARGS:+${DB_ARGS}}
 ) > "${TMP_LOG}" 2>&1
 rc=$?
 set -e
