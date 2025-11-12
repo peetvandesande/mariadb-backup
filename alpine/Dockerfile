@@ -15,7 +15,7 @@ RUN apk add --no-cache \
  && echo '0	2	*	*	*	/usr/local/bin/backup >> /proc/1/fd/1 2>&1' > /etc/crontabs/root \
  && chmod 600 /etc/crontabs/root \
  && echo -e "[mariadb-client]\nssl=OFF"  > /etc/my.cnf.d/mariadb-client.cnf \
- && echo -e "[mariadb-dump]\nssl=OFF"    > /etc/my.cnf.d/mariadb-dump.cnf \
+ && echo -e "[mariadb-dump]\nssl=OFF"    > /etc/my.cnf.d/mariadb-dump.cnf
 
 # Copy scripts from repo root 'app/' and make them executable
 COPY --chmod=0755 app/entrypoint.sh /entrypoint.sh
