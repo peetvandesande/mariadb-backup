@@ -106,7 +106,7 @@ TMP_LOG="/tmp/mariadb-restore.log"
 set +e
 (
   set -o pipefail 2>/dev/null || true
-  ${DECOMP} "${INPUT" \
+  ${DECOMP} "${INPUT}" \
 #   case "${DECOMP}" in
 #     cat)             cat "${INPUT}" ;;
 #     "zstd -d -q -c") zstd -d -q -c "${INPUT}" ;;
