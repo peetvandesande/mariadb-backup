@@ -76,17 +76,15 @@ TS="$(date -u +"${DATE_FMT}")"
 case "${COMPRESS}" in
   gz)
     EXT=".sql.gz"
-    #CMD_COMPRESS="gzip -c -f -\"${COMPRESS_LEVEL}\""
     CMD_COMPRESS="gzip -c -f"
     ;;
   bz2)
     EXT=".sql.bz2"
-    #CMD_COMPRESS="bzip2 -c -f -\"${COMPRESS_LEVEL}\""
     CMD_COMPRESS="bzip2 -c -f"
     ;;
   zst)
     EXT=".sql.zst"
-    CMD_COMPRESS="zstd -T\"${ZSTD_THREADS}\" -q -f -\"${COMPRESS_LEVEL}\" -"
+    CMD_COMPRESS="zstd -q -f -${COMPRESS_LEVEL} -"
     ;;
   none)
     EXT=".sql"
@@ -94,9 +92,6 @@ case "${COMPRESS}" in
     ;;
   *)    echo "Unsupported COMPRESS='${COMPRESS}' (use zst|gz|bz2|none)" >&2; exit 64 ;;
 esac
-
-# Debug
-log "\$CMD_COMPRESS='${CMD_COMPRESS}'"
 
 OUT_BASENAME="${BACKUP_NAME_PREFIX}${FILENAME_DB_PART}-mariadb-${TS}${EXT}"
 OUT="${BACKUPS_DIR%/}/${OUT_BASENAME}"
@@ -119,24 +114,6 @@ set +e
   set -o pipefail 2>/dev/null || true
   mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
     | $CMD_COMPRESS > "${OUT}"
-#   case "${COMPRESS}" in
-#     zst)
-#       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | zstd -T"${ZSTD_THREADS}" -q -f -"${COMPRESS_LEVEL}" - > "${OUT}"
-#       ;;
-#     gz)
-#       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | gzip -c -f -"${COMPRESS_LEVEL}" > "${OUT}"
-#       ;;
-#     bz2)
-#       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | bzip2 -c -f -"${COMPRESS_LEVEL}" > "${OUT}"
-#       ;;
-#     none)
-#       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         > "${OUT}"
-#       ;;
-#   esac
 )
 rc=$?
 set -e
