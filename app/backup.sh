@@ -10,7 +10,7 @@ set -eu
 # Env vars:
 #   MARIADB_USER         (required)
 #   MARIADB_PASSWORD     (required)
-#   MARIADB_DATABASE     (default=__ALL__)
+#   MARIADB_DATABASE     (default=__ALL__, accepts space/comma list of DBs)
 #   MARIADB_HOST         (default=db)
 #   MARIADB_PORT         (default=3306)
 #
@@ -33,13 +33,13 @@ log() { printf "%s %s\n" "$(date -Is)" "$*"; }
 # ---- inputs / defaults ------------------------------------------------------
 : "${MARIADB_USER:?MARIADB_USER is required}"
 : "${MARIADB_PASSWORD:=}"
-: "${MARIADB_DATABASE:=__ALL__}"     # __ALL__ or space/comma list of DBs
+: "${MARIADB_DATABASE:=__ALL__}"
 : "${MARIADB_HOST:=db}"
 : "${MARIADB_PORT:=3306}"
 
 : "${BACKUPS_DIR:=/backups}"
 : "${BACKUP_NAME_PREFIX:=}"
-: "${DATE_FMT:=%Y%m%d}"              # UTC date in filename
+: "${DATE_FMT:=%Y%m%d}"
 
 # Compression (pg-backup style)
 : "${COMPRESS:=zst}"               # zst|gz|bz2|none
@@ -47,7 +47,7 @@ log() { printf "%s %s\n" "$(date -Is)" "$*"; }
 : "${ZSTD_THREADS:=1}"               # 0=auto, else N threads
 
 # Optional behavior
-: "${VERIFY_SHA256:=1}"              # 1=write checksum
+: "${VERIFY_SHA256:=1}"
 : "${CHOWN_UID:=}"
 : "${CHOWN_GID:=}"
 : "${CHMOD_MODE:=}"
