@@ -42,8 +42,8 @@ log() { printf "%s %s\n" "$(date -Is)" "$*"; }
 : "${DATE_FMT:=%Y%m%d}"              # UTC date in filename
 
 # Compression (pg-backup style)
-: "${COMPRESSOR:=zst}"               # zst|gz|bz2|none
-: "${COMPRESSOR_LEVEL:=19}"          # zstd: 1..22; gzip/bzip2: 1..9
+: "${COMPRESS:=zst}"               # zst|gz|bz2|none
+: "${COMPRESS_LEVEL:=19}"          # zstd: 1..22; gzip/bzip2: 1..9
 : "${ZSTD_THREADS:=1}"               # 0=auto, else N threads
 
 # Optional behavior
@@ -73,32 +73,37 @@ fi
 
 # ---- filename ---------------------------------------------------------------
 TS="$(date -u +"${DATE_FMT}")"
-case "${COMPRESSOR}" in
+case "${COMPRESS}" in
   gz)
     EXT=".sql.gz"
-    CMD_COMPRESS="gzip -c -f -\"${COMPRESSOR_LEVEL}\""
+    #CMD_COMPRESS="gzip -c -f -\"${COMPRESS_LEVEL}\""
+    CMD_COMPRESS="gzip -c -f"
     ;;
   bz2)
     EXT=".sql.bz2"
-    CMD_COMPRESS="bzip2 -c -f -\"${COMPRESSOR_LEVEL}\""
+    #CMD_COMPRESS="bzip2 -c -f -\"${COMPRESS_LEVEL}\""
+    CMD_COMPRESS="bzip2 -c -f"
     ;;
   zst)
     EXT=".sql.zst"
-    CMD_COMPRESS="zstd -T\"${ZSTD_THREADS}\" -q -f -\"${COMPRESSOR_LEVEL}\" -"
+    CMD_COMPRESS="zstd -T\"${ZSTD_THREADS}\" -q -f -\"${COMPRESS_LEVEL}\" -"
     ;;
   none)
     EXT=".sql"
     CMD_COMPRESS="cat"
     ;;
-  *)    echo "Unsupported COMPRESSOR='${COMPRESSOR}' (use zst|gz|bz2|none)" >&2; exit 64 ;;
+  *)    echo "Unsupported COMPRESS='${COMPRESS}' (use zst|gz|bz2|none)" >&2; exit 64 ;;
 esac
+
+# Debug
+log "\$CMD_COMPRESS='${CMD_COMPRESS}'"
 
 OUT_BASENAME="${BACKUP_NAME_PREFIX}${FILENAME_DB_PART}-mariadb-${TS}${EXT}"
 OUT="${BACKUPS_DIR%/}/${OUT_BASENAME}"
 SHA="${OUT}.sha256"
 
 log "Starting MariaDB backup → ${OUT}"
-log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${COMPRESSOR}"
+log "Host=${MARIADB_HOST}:${MARIADB_PORT} DB=${FILENAME_DB_PART} compressor=${COMPRESS}"
 
 # ---- dump command -----------------------------------------------------------
 # Avoid password in ps
@@ -114,18 +119,18 @@ set +e
   set -o pipefail 2>/dev/null || true
   mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
     | $CMD_COMPRESS > "${OUT}"
-#   case "${COMPRESSOR}" in
+#   case "${COMPRESS}" in
 #     zst)
 #       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | zstd -T"${ZSTD_THREADS}" -q -f -"${COMPRESSOR_LEVEL}" - > "${OUT}"
+#         | zstd -T"${ZSTD_THREADS}" -q -f -"${COMPRESS_LEVEL}" - > "${OUT}"
 #       ;;
 #     gz)
 #       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | gzip -c -f -"${COMPRESSOR_LEVEL}" > "${OUT}"
+#         | gzip -c -f -"${COMPRESS_LEVEL}" > "${OUT}"
 #       ;;
 #     bz2)
 #       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
-#         | bzip2 -c -f -"${COMPRESSOR_LEVEL}" > "${OUT}"
+#         | bzip2 -c -f -"${COMPRESS_LEVEL}" > "${OUT}"
 #       ;;
 #     none)
 #       /usr/bin/mariadb-dump ${COMMON_ARGS} ${DB_MODE} \
