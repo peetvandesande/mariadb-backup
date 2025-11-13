@@ -99,14 +99,12 @@ if [ -n "${MARIADB_DATABASE}" ]; then
 fi
 
 log "Restoring ${INPUT} → ${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE:-(as in dump)}"
-log "DEBUG: ${DECOMP} '${INPUT}' | /usr/bin/mariadb --host=${MARIADB_HOST} --port=${MARIADB_PORT} --user=${MARIADB_USER} ${DB_ARGS:+${DB_ARGS}}"
 
 # ---------------- Run restore with pipefail ---------------
 TMP_LOG="/tmp/mariadb-restore.log"
 set +e
 (
   set -o pipefail 2>/dev/null || true
-  ${DECOMP} "${INPUT}" \
 #   case "${DECOMP}" in
 #     cat)             cat "${INPUT}" ;;
 #     "zstd -d -q -c") zstd -d -q -c "${INPUT}" ;;
@@ -114,6 +112,7 @@ set +e
 #     "bzip2 -dc")     bzip2 -dc "${INPUT}" ;;
 #     *) echo "Internal error: bad DECOMP '${DECOMP}'" >&2; exit 70 ;;
 #   esac | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
+  ${DECOMP} "${INPUT}" \
   | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
          --user="${MARIADB_USER}" ${DB_ARGS:+${DB_ARGS}}
 ) > "${TMP_LOG}" 2>&1
