@@ -42,12 +42,12 @@ INPUT="${1:-}"
 if [ -z "${INPUT}" ]; then
   log "Scanning for newest archive in: ${BACKUPS_DIR}"
   # Look for newest matching real dump files, ignore .sha256
-  CANDIDATE="$( (ls -1t "${BACKUPS_DIR%/}/${BACKUP_PREFIX}"-*.sql      2>/dev/null; \
-                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_PREFIX}"-*.sql.zst 2>/dev/null; \
-                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_PREFIX}"-*.sql.gz  2>/dev/null; \
-                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_PREFIX}"-*.sql.bz2 2>/dev/null) | head -n1 )"
+  CANDIDATE="$( (ls -1t "${BACKUPS_DIR%/}/${BACKUP_NAME_PREFIX}"-*.sql      2>/dev/null; \
+                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_NAME_PREFIX}"-*.sql.zst 2>/dev/null; \
+                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_NAME_PREFIX}"-*.sql.gz  2>/dev/null; \
+                  ls -1t "${BACKUPS_DIR%/}/${BACKUP_NAME_PREFIX}"-*.sql.bz2 2>/dev/null) | head -n1 )"
   if [ -z "${CANDIDATE}" ]; then
-    echo "No dump found in ${BACKUPS_DIR} with BACKUP_PREFIX='${BACKUP_PREFIX}'" >&2
+    echo "No dump found in ${BACKUPS_DIR} with BACKUP_NAME_PREFIX='${BACKUP_NAME_PREFIX}'" >&2
     exit 64
   fi
   INPUT="${CANDIDATE}"
