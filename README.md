@@ -1,7 +1,7 @@
 # mariadb-backup
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/peetvandesande/mariadb-backup)](https://hub.docker.com/r/peetvandesande/mariadb-backup)
-[![Image Size](https://img.shields.io/docker/image-size/peetvandesande/mariadb-backup/alpine)](https://hub.docker.com/r/peetvandesande/mariadb-backup/alpine)
+[![Image Size](https://img.shields.io/docker/image-size/peetvandesande/mariadb-backup)](https://hub.docker.com/r/peetvandesande/mariadb-backup)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/peetvandesande/mariadb-backup)](https://github.com/peetvandesande/mariadb-backup/commits/main)
 [![GitHub Stars](https://img.shields.io/github/stars/peetvandesande/mariadb-backup?style=flat)](https://github.com/peetvandesande/mariadb-backup/stargazers)
