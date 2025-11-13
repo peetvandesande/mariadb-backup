@@ -38,7 +38,7 @@ log() { printf "%s %s\n" "$(date -Is)" "$*"; }
 : "${MARIADB_PORT:=3306}"
 
 : "${BACKUPS_DIR:=/backups}"
-: "${BACKUP_PREFIX:=}"
+: "${BACKUP_NAME_PREFIX:=}"
 : "${DATE_FMT:=%Y%m%d}"              # UTC date in filename
 
 # Compression (pg-backup style)
@@ -93,7 +93,7 @@ case "${COMPRESSOR}" in
   *)    echo "Unsupported COMPRESSOR='${COMPRESSOR}' (use zst|gz|bz2|none)" >&2; exit 64 ;;
 esac
 
-OUT_BASENAME="${BACKUP_PREFIX}${FILENAME_DB_PART}-mariadb-${TS}${EXT}"
+OUT_BASENAME="${BACKUP_NAME_PREFIX}${FILENAME_DB_PART}-mariadb-${TS}${EXT}"
 OUT="${BACKUPS_DIR%/}/${OUT_BASENAME}"
 SHA="${OUT}.sha256"
 
