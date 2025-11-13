@@ -1,0 +1,5 @@
+# .env example
+MARIADB_HOST=db
+MARIADB_USER=appuser
+MARIADB_PASSWORD=apppass
+MARIADB_DATABASE=app
