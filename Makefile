@@ -15,7 +15,7 @@ DOCKERFILE     ?= $(VARIANT)/Dockerfile
 TAG_VARIANT    := -$(VARIANT)
 
 # Optional metadata (edit per project)
-IMAGE_TITLE            ?= file-backup
+IMAGE_TITLE            ?= mariadb-backup
 IMAGE_DESCRIPTION      ?= "Simple backup/restore utility (Alpine)"
 IMAGE_SOURCE_URL       ?= $(shell git remote get-url origin | sed 's/^git@/https:\/\//; s/\.git$$//; s/:/\//')
 IMAGE_REPO_URL         ?= https://hub.docker.com/r/$(REPO)
