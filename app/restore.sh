@@ -1,19 +1,41 @@
 #!/bin/sh
-# mariadb-backup :: restore.sh
-# Restore a MariaDB dump (.sql|.sql.zst|.sql.gz|.sql.bz2) in a controlled environment.
 set -eu
-
-# ---------------- Env ----------------
-: "${MARIADB_HOST:=db}"
-: "${MARIADB_PORT:=3306}"
-: "${MARIADB_USER:?MARIADB_USER is required}"
-: "${MARIADB_PASSWORD:=}"
-: "${MARIADB_DATABASE:=}"            # optional target DB
-: "${BACKUPS_DIR:=/backups}"
-: "${BACKUP_PREFIX:=mariadb}"        # used when auto-selecting newest
-: "${VERIFY_SHA256:=1}"
+# ------------------------------------------------------------
+# mariadb-backup :: restore.sh
+# - Restores a MariaDB dump (.sql[.gz|.bz2|.zst]).
+# - Busybox/Alpine/GNU userland friendly.
+# - Booleans are 1/0 (VERIFY_SHA256).
+# ------------------------------------------------------------
+# Env vars:
+#   MARIADB_USER         (required)
+#   MARIADB_PASSWORD     (required)
+#   MARIADB_DATABASE     (optional target DB)
+#   MARIADB_HOST         (default=db)
+#   MARIADB_PORT         (default=3306)
+#
+#   BACKUPS_DIR          (default=/backups)
+#   BACKUP_NAME_PREFIX   (optional)
+#
+#   VERIFY_SHA256        (default=1)  1=verify against .sha256 next to dump
+#
+#   DATE_FMT             (default=%Y%m%d) UTC date for filename
+# ------------------------------------------------------------
 
 log() { printf "%s %s\n" "$(date -Is)" "$*"; }
+
+# ---- inputs / defaults ------------------------------------------------------
+: "${MARIADB_USER:?MARIADB_USER is required}"
+: "${MARIADB_PASSWORD:=}"
+: "${MARIADB_DATABASE:=}"
+: "${MARIADB_HOST:=db}"
+: "${MARIADB_PORT:=3306}"
+
+: "${BACKUPS_DIR:=/backups}"
+: "${BACKUP_NAME_PREFIX:=}"
+: "${DATE_FMT:=%Y%m%d}"
+
+# Optional behavior
+: "${VERIFY_SHA256:=1}"
 
 # ---------------- Pick input ----------------
 INPUT="${1:-}"
@@ -46,7 +68,7 @@ fi
 # ---------------- Verify checksum (optional) --------------
 if [ "${VERIFY_SHA256}" = "1" ] && [ -f "${INPUT}.sha256" ]; then
   log "Verifying checksum: ${INPUT}.sha256"
-  ( cd "$(dirname "${INPUT}")" && sha256sum -c "$(basename "${INPUT}.sha256")" )
+  ( sha256sum -c "${INPUT}.sha256" )
 fi
 
 # ---------------- Decide decompressor ---------------------
@@ -63,7 +85,7 @@ case "${INPUT}" in
     ;;
 esac
 
-# Avoid showing password in ps
+# Avoid password in ps
 [ -n "${MARIADB_PASSWORD}" ] && export MYSQL_PWD="${MARIADB_PASSWORD}"
 
 # ---------------- Ensure DB exists (optional) -------------
@@ -84,13 +106,15 @@ TMP_LOG="/tmp/mariadb-restore.log"
 set +e
 (
   set -o pipefail 2>/dev/null || true
-  case "${DECOMP}" in
-    cat)            cat "${INPUT}" ;;
-    "zstd -d -q -c") zstd -d -q -c "${INPUT}" ;;
-    "gzip -dc")     gzip -dc "${INPUT}" ;;
-    "bzip2 -dc")    bzip2 -dc "${INPUT}" ;;
-    *) echo "Internal error: bad DECOMP '${DECOMP}'" >&2; exit 70 ;;
-  esac | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
+  ${DECOMP} "${INPUT" \
+#   case "${DECOMP}" in
+#     cat)             cat "${INPUT}" ;;
+#     "zstd -d -q -c") zstd -d -q -c "${INPUT}" ;;
+#     "gzip -dc")      gzip -dc "${INPUT}" ;;
+#     "bzip2 -dc")     bzip2 -dc "${INPUT}" ;;
+#     *) echo "Internal error: bad DECOMP '${DECOMP}'" >&2; exit 70 ;;
+#   esac | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
+  | /usr/bin/mariadb --host="${MARIADB_HOST}" --port="${MARIADB_PORT}" \
          --user="${MARIADB_USER}" ${DB_ARGS:+${DB_ARGS}}
 ) > "${TMP_LOG}" 2>&1
 rc=$?
@@ -105,4 +129,4 @@ if [ $rc -ne 0 ]; then
 fi
 
 rm -f "$TMP_LOG"
-log "Restore completed successfully."
+log "MariaDB restore completed successfully."
